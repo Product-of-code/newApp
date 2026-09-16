@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenSpace - Soundscape & Timer</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: 800;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            margin: 20px 0;
+            color: var(--accent-color);
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        button {
+            background: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
+        button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sounds-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .sound-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sound-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sound-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .sound-card.active .toggle-btn {
+            opacity: 1;
+        }
+
+        .sound-card.active {
+            border-color: var(--accent-color);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>ZenSpace</h1>
+            <p>Focus soundscape & timer</p>
+        </header>
+
+        <div class="timer-display" id="timer">25:00</div>
+
+        <div class="controls">
+            <button id="start-btn">Start</button>
+            <button id="reset-btn" class="secondary">Reset</button>
+        </div>
+
+        <div class="sounds-grid">
+            <!-- Rain Sound -->
+            <div class="sound-card" id="card-rain">
+                <div class="sound-header">
+                    <span class="sound-title">🌧️ Rain</span>
+                    <button class="toggle-btn" onclick="toggleSound('rain')">▶</button>
+                </div>
+                <input type="range" min="0" max="1" step="0.01" value="0.5" oninput="setVolume('rain', this.value)">
+            </div>
+
+            <!-- Waves Sound -->
+            <div class="sound-card" id="card-waves">
+                <div class="sound-header">
+                    <span class="sound-title">🌊 Ocean</span>
+                    <button class="toggle-btn" onclick="toggleSound('waves')">▶</button>
+                </div>
+                <input type="range" min="0" max="1" step="0.01" value="0.5" oninput="setVolume('waves', this.value)">
+            </div>
+
+            <!-- Wind Sound -->
+            <div class="sound-card" id="card-wind">
+                <div class="sound-header">
+                    <span class="sound-title">💨 Wind</span>
+                    <button class="toggle-btn" onclick="toggleSound('wind')">▶</button>
+                </div>
+                <input type="range" min="0" max="1" step="0.01" value="0.5" oninput="setVolume('wind', this.value)">
+            </div>
+
+            <!-- Static Sound -->
+            <div class="sound-card" id="card-noise">
+                <div class="sound-header">
+                    <span class="sound-title">📻 White Noise</span>
+                    <button class="toggle-btn" onclick="toggleSound('noise')">▶</button>
+                </div>
+                <input type="range" min="0" max="1" step="0.01" value="0.5" oninput="setVolume('noise', this.value)">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Timer Functionality ---
+        let timeLeft = 25 * 60;
+        let timerId = null;
+
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (timerId === null) {
+                timerId = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerId);
+                        timerId = null;
+                        startBtn.textContent = 'Start';
+                        alert('Timer finished!');
+                    }
+                }, 1000);
+                startBtn.textContent = 'Pause';
+            } else {
+                clearInterval(timerId);
+                timerId = null;
+                startBtn.textContent = 'Start';
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 25 * 60;
+            updateDisplay();
+            startBtn.textContent = 'Start';
+        });
+
+        // --- Synthesized Ambient Sound Generator (Web Audio API) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const generators = {};
+
+        function createNoiseBuffer() {
+            const bufferSize = audioCtx.sampleRate * 2;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            return buffer;
+        }
+
+        const noiseBuffer = createNoiseBuffer();
+
+        function createAmbientSound(type) {
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
+
+            const filter = audioCtx.createBiquadFilter();
+            const gainNode = audioCtx.createGain();
+
+            if (type === 'rain') {
+                filter.type = 'lowpass';
+                filter.frequency.value = 1000;
+            } else if (type === 'waves') {
+                filter.type = 'bandpass';
+                filter.frequency.value = 400;
+                // LFO to modulate frequency for ocean waves effect
+                const lfo = audioCtx.createOscillator();
+                lfo.frequency.value = 0.1;
+                const lfoGain = audioCtx.createGain();
+                lfoGain.gain.value = 300;
+                lfo.connect(lfoGain);
+                lfoGain.connect(filter.frequency);
+                lfo.start();
+            } else if (type === 'wind') {
+                filter.type = 'bandpass';
+                filter.frequency.value = 800;
+                filter.Q.value = 3.0;
+            } else if (type === 'noise') {
+                filter.type = 'lowpass';
+                filter.frequency.value = 3000;
+            }
+
+            whiteNoise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            return { source: whiteNoise, gain: gainNode, volume: 0.5 };
+        }
+
+        function toggleSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const card = document.getElementById(`card-${type}`);
+            const btn = card.querySelector('.toggle-btn');
+
+            if (generators[type]) {
+                generators[type].source.stop();
+                delete generators[type];
+                card.classList.remove('active');
+                btn.textContent = '▶';
+            } else {
+                const sound = createAmbientSound(type);
+                const sliderVal = card.querySelector('input[type="range"]').value;
+                sound.gain.gain.value = sliderVal;
+                sound.source.start();
+                generators[type] = sound;
+                card.classList.add('active');
+                btn.textContent = '⏹';
+            }
+        }
+
+        function setVolume(type, value) {
+            if (generators[type]) {
+                generators[type].gain.gain.value = value;
+            }
+        }
+    </script>
+</body>
+</html>
